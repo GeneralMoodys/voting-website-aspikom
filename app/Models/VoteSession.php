@@ -15,6 +15,7 @@ class VoteSession extends Model
         'pin_sesi_2',
         'is_used_1',
         'is_used_2',
+        'is_active',
     ];
 
     public function kandidats()
@@ -26,9 +27,9 @@ class VoteSession extends Model
     // VoteSession.php
     public function voters()
     {
-        return $this->hasMany(Voter::class, 'kandidat_id', 'id');
+        return $this->hasMany(Voter::class, 'vote_session_id');
     }
-
+    
     
 
     

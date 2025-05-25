@@ -25,10 +25,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('vote-sessions', [VoteSessionController::class, 'index'])->name('vote.sessions');
-
+    Route::get('vote-sessions/sesi1', [VoteSessionController::class, 'sesi1'])->name('vote.sessions.sesi1');
+    Route::get('vote-sessions/sesi2', [VoteSessionController::class, 'sesi2'])->name('vote.sessions.sesi2');
+    
     // Kandidat CRUD (admin.kandidats.*)
     Route::resource('kandidats', KandidatController::class)->except(['show']);
+    Route::get('voters', [VotingSessionController::class, 'showVoters'])->name('voters');
+    Route::delete('voters/{id}/delete-vote', [VotingSessionController::class, 'deleteVote'])->name('voters.deleteVote');
+
 });
+Route::post('/vote/toggle-all', [App\Http\Controllers\VoteSessionController::class, 'toggleAll'])->name('vote.toggleAll');
 
 /*
 |--------------------------------------------------------------------------

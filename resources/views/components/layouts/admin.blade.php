@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ $title ?? 'Admin Panel' }}</title>
+    
+    <link rel="icon" href="{{ asset('ASPIKOM.png') }}" type="image/x-icon"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         /* Menyembunyikan sidebar pada tampilan mobile */
@@ -37,9 +39,21 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.vote.sessions') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
+                        <span class="block px-4 py-2 font-semibold text-gray-600 dark:text-gray-400">
                             Statistik Voting
-                        </a>
+                        </span>
+                        <ul class="pl-4">
+                            <li>
+                                <a href="{{ route('admin.vote.sessions.sesi1') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                    Sesi 1
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.vote.sessions.sesi2') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                    Sesi 2
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li>
                         <a href="{{ route('admin.kandidats.index') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
@@ -47,8 +61,8 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.kandidats.create') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
-                            Tambah Kandidat
+                        <a href="{{ route('admin.voters') }}" class="block px-4 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
+                            Tabel Voter
                         </a>
                     </li>
                     {{-- Logout Link --}}

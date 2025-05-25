@@ -15,6 +15,7 @@ class Voter extends Model
         'surat_kuasa',
         'kandidat_id',
         'status',
+        'sesi_ke', // <== tambahkan ini
     ];
 
     // Relasi ke VoteSession (mengambil sesi voting)

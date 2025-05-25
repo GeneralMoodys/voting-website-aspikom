@@ -24,65 +24,65 @@ class VotingSessionController extends Controller
 
     $pin = $request->pin;
 
-    // Cek jika PIN cocok dengan sesi 1
-    $session = VoteSession::where('pin_sesi_1', $pin)->first();
-    $usedSessionField = 'is_used_1';
+    // Cek apakah PIN cocok dengan sesi 1 atau sesi 2
+    $session = VoteSession::where('pin_sesi_1', $pin)
+        ->orWhere('pin_sesi_2', $pin)
+        ->first();
 
     if (!$session) {
-        // Jika bukan sesi 1, cek apakah cocok dengan sesi 2
-        $session = VoteSession::where('pin_sesi_2', $pin)->first();
-        $usedSessionField = 'is_used_2';
+        return back()->withErrors(['pin' => 'PIN tidak ditemukan atau belum aktif.']);
+    }
 
-        if (!$session) {
-            return back()->withErrors(['pin' => 'PIN tidak ditemukan atau belum aktif.']);
-        }
+    // Tentukan apakah ini sesi 1 atau sesi 2
+    $isSesi1 = $session->pin_sesi_1 === $pin;
+    $usedSessionField = $isSesi1 ? 'is_used_1' : 'is_used_2';
 
-        // Jika sesi 2 sudah digunakan, tolak
-        if ($session->is_used_2) {
-            return back()->withErrors(['pin' => 'PIN sesi 2 sudah digunakan.']);
-        }
+    // Cek apakah sesi sedang aktif
+    if (!$session->is_active) {
+        return back()->withErrors(['pin' => 'Sesi voting ini sedang tidak aktif.']);
+    }
 
-        // Ambil voter dari sesi 1 untuk duplikasi data
-        $voterSesi1 = Voter::where('vote_session_id', $session->id)->first();
+    // Cek apakah PIN sudah digunakan
+    if ($session->$usedSessionField) {
+        return back()->withErrors(['pin' => 'PIN sesi ' . ($isSesi1 ? '1' : '2') . ' sudah digunakan.']);
+    }
 
-        if (!$voterSesi1) {
-            return back()->withErrors(['pin' => 'Data sesi 1 belum ditemukan.']);
-        }
-
-        // Buat voter baru untuk sesi 2
-        $voterBaru = Voter::create([
-            'nama' => $voterSesi1->nama,
-            'vote_session_id' => $session->id,
-            'bukti_anggota' => $voterSesi1->bukti_anggota,
-            'surat_kuasa' => $voterSesi1->surat_kuasa,
-        ]);
-
+    // Kalau sesi 1: redirect ke form
+    if ($isSesi1) {
         session([
             'vote_session_id' => $session->id,
             'used_session_field' => $usedSessionField,
+            'universitas' => $session->universitas,
+            'prodi' => $session->prodi,
         ]);
 
-        // Redirect langsung ke kandidat
-        return redirect()->route('vote.kandidat', ['voter' => $voterBaru->id]);
+        return redirect()->route('vote.form');
     }
 
-    // Kalau ini adalah PIN sesi 1
-    if ($session->is_used_1) {
-        return back()->withErrors(['pin' => 'PIN sesi 1 sudah digunakan.']);
+    // Kalau sesi 2: clone voter dari sesi 1
+    $voterSesi1 = Voter::where('vote_session_id', $session->id)->first();
+
+    if (!$voterSesi1) {
+        return back()->withErrors(['pin' => 'Data sesi 1 belum ditemukan.']);
     }
 
-    // Simpan session info
+    $voterBaru = Voter::create([
+        'nama' => $voterSesi1->nama,
+        'vote_session_id' => $session->id,
+        'bukti_anggota' => $voterSesi1->bukti_anggota,
+        'surat_kuasa' => $voterSesi1->surat_kuasa,
+        'sesi_ke' => 2,
+    ]);
+
     session([
         'vote_session_id' => $session->id,
         'used_session_field' => $usedSessionField,
+        'universitas' => $session->universitas,
+        'prodi' => $session->prodi,
     ]);
 
-    // Redirect ke form
-    return redirect()->route('vote.form');
+    return redirect()->route('vote.kandidat', ['voter' => $voterBaru->id]);
 }
-
-    
-
 
 
 public function showVoteForm()
@@ -124,8 +124,8 @@ public function submitVoterData(Request $request)
         'vote_session_id' => $session->id,
         'bukti_anggota' => $buktiAnggotaPath,
         'surat_kuasa' => $suratKuasaPath,
+        'sesi_ke' => 1, // <== karena ini pasti sesi 1
     ]);
-
     // Arahkan ke halaman kandidat
     return redirect()->route('vote.kandidat', ['voter' => $voter->id]);
 }
@@ -187,6 +187,27 @@ public function submitVote(Request $request, Voter $voter)
     {
         return view('vote.success');
     }
+    
+    public function showVoters(Request $request)
+{
+    $search = $request->input('search');
+    $sesi = $request->input('sesi', 1); // default sesi 1
+
+    $voters = Voter::with(['session', 'kandidat'])
+        ->where('sesi_ke', $sesi)
+        ->when($search, function ($query, $search) {
+            $query->where('nama', 'like', "%{$search}%")
+                ->orWhereHas('session', function ($q) use ($search) {
+                    $q->where('universitas', 'like', "%{$search}%")
+                      ->orWhere('prodi', 'like', "%{$search}%");
+                });
+        })
+        ->orderByDesc('created_at')
+        ->paginate(10)
+        ->withQueryString(); // agar query tetap saat pagination
+
+    return view('admin.voter', compact('voters', 'search', 'sesi'));
+}
 
 
 
