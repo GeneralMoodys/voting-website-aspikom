@@ -31,8 +31,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Kandidat CRUD (admin.kandidats.*)
     Route::resource('kandidats', KandidatController::class)->except(['show']);
     Route::get('voters', [VotingSessionController::class, 'showVoters'])->name('voters');
-    Route::delete('voters/{id}/delete-vote', [VotingSessionController::class, 'deleteVote'])->name('voters.deleteVote');
-
+   Route::delete('voters/{id}', [VotingSessionController::class, 'destroy'])->name('voters.destroy');
 });
 Route::post('/vote/toggle-all', [App\Http\Controllers\VoteSessionController::class, 'toggleAll'])->name('vote.toggleAll');
 

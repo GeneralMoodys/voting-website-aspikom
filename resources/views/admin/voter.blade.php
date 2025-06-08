@@ -1,7 +1,7 @@
 <x-layouts.admin>
     <x-slot name="title">Dashboard</x-slot>
 
-    <h1 class="text-xl font-semibold mb-4">Data Voter</h1>
+    <h1 class="text-xl text-white font-semibold mb-4">Data Voter</h1>
 
     {{-- Tabs Sesi --}}
     <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
@@ -29,32 +29,38 @@
 
     {{-- Table --}}
     <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-300 rounded-md shadow-sm">
+        <table class="min-w-full bg-white text-sm text-left text-gray-700 rounded-lg shadow-md overflow-hidden">
             <thead class="bg-gray-100 text-gray-700">
                 <tr>
-                    <th class="px-4 py-2 text-left">Nama</th>
-                    <th class="px-4 py-2 text-left">Universitas</th>
-                    <th class="px-4 py-2 text-left">Prodi</th>
-                    <th class="px-4 py-2 text-left">Sesi</th>
-                    <th class="px-4 py-2 text-left">Status</th>
-                    <th class="px-4 py-2 text-left">Kandidat Dipilih</th>
-                    <th class="px-4 py-2 text-left">Aksi</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Nama</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Universitas</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Prodi</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Sesi</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Status</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Kandidat Dipilih</th>
+                    <th class="px-4 py-2 bg-gray-100 font-semibold">Aksi</th>
                 </tr>
             </thead>
             <tbody class="text-gray-800">
                 @forelse($voters as $voter)
-                    <tr class="border-t">
+                    <tr class="border-b hover:bg-gray-50 transition">
                         <td class="px-4 py-2">{{ $voter->nama }}</td>
                         <td class="px-4 py-2">{{ $voter->session->universitas ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $voter->session->prodi ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $voter->sesi_ke }}</td>
                         <td class="px-4 py-2">{{ $voter->status == 1 ? 'Sudah Vote' : 'Belum Vote' }}</td>
                         <td class="px-4 py-2">{{ $voter->kandidat->nama ?? '-' }}</td>
-                        <td class="px-4 py-2">
-                            <a href="{{ asset('storage/' . $voter->bukti_anggota) }}" class="text-blue-600 hover:underline" target="_blank">Lihat Bukti</a> |
-                            <a href="{{ asset('storage/' . $voter->surat_kuasa) }}" class="text-blue-600 hover:underline" target="_blank">Lihat Surat Kuasa</a>
-                    
+                        <td class="px-4 py-2 space-y-1">
+                            <a href="{{ asset('storage/' . $voter->bukti_anggota) }}" class="text-blue-600 hover:underline block">📄 Lihat Bukti</a>
+                            <a href="{{ asset('storage/' . $voter->surat_kuasa) }}" class="text-blue-600 hover:underline block">📝 Lihat Surat Kuasa</a>
+                            <form action="{{ route('admin.voters.destroy', $voter->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus voter ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline block">🗑️ Hapus</button>
+                            </form>
                         </td>
+
+
                         
                         
                     </tr>

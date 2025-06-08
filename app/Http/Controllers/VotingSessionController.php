@@ -7,6 +7,8 @@ use App\Models\Voter;
 use Illuminate\Http\Request;
 use App\Models\Kandidat;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
  
 class VotingSessionController extends Controller
 {
@@ -208,6 +210,24 @@ public function submitVote(Request $request, Voter $voter)
 
     return view('admin.voter', compact('voters', 'search', 'sesi'));
 }
+    
+    public function destroy($id)
+{
+    $voter = Voter::findOrFail($id);
+
+    // Hapus file jika ada
+    if ($voter->bukti_anggota) {
+        Storage::delete('public/' . $voter->bukti_anggota);
+    }
+    if ($voter->surat_kuasa) {
+        Storage::delete('public/' . $voter->surat_kuasa);
+    }
+
+    $voter->delete();
+
+    return redirect()->route('admin.voters', ['sesi' => request('sesi')])->with('success', 'Data voter berhasil dihapus.');
+}
+
 
 
 
